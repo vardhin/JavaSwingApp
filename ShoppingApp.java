@@ -51,6 +51,7 @@ public class ShoppingApp {
                     }
                 }
             };
+            mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20)); // Add padding to all sides
 
             // Search panel
             JPanel searchPanel = new JPanel(new BorderLayout());
