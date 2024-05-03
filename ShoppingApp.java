@@ -202,23 +202,42 @@ public class ShoppingApp {
     }
 
     // Filter products based on the search text
-    private static void filterProducts(String searchText) {
-        for (Component component : productPanel.getComponents()) {
-            if (component instanceof JPanel) {
-                JPanel productPanel = (JPanel) component;
-                JLabel nameLabel = (JLabel) productPanel.getComponent(0);
-                String productName = nameLabel.getText();
-                if (productName.toLowerCase().contains(searchText.toLowerCase())) {
-                    productPanel.setVisible(true); // Show product panel
-                } else {
-                    productPanel.setVisible(false); // Hide product panel
-                }
+private static void filterProducts(String searchText) {
+    List<Component> foundComponents = new ArrayList<>();
+    List<Component> hiddenComponents = new ArrayList<>();
+    
+    // Separate found and hidden components
+    for (Component component : productPanel.getComponents()) {
+        if (component instanceof JPanel) {
+            JPanel productPanel = (JPanel) component;
+            JLabel nameLabel = (JLabel) productPanel.getComponent(0);
+            String productName = nameLabel.getText();
+            if (productName.toLowerCase().contains(searchText.toLowerCase())) {
+                foundComponents.add(productPanel);
+            } else {
+                hiddenComponents.add(productPanel);
             }
         }
-        // Refresh the layout to reflect changes
-        productPanel.revalidate();
-        productPanel.repaint();
     }
+    
+    // Remove all components from productPanel
+    productPanel.removeAll();
+    
+    // Add found components to the top
+    for (Component component : foundComponents) {
+        productPanel.add(component);
+    }
+    
+    // Add hidden components after found components
+    for (Component component : hiddenComponents) {
+        productPanel.add(component);
+    }
+    
+    // Refresh the layout to reflect changes
+    productPanel.revalidate();
+    productPanel.repaint();
+}
+
 
     // Update the shopping cart panel with current items and total price
     private static void updateCartPanel() {
