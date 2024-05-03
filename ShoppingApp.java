@@ -4,20 +4,20 @@ import java.awt.event.*;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ShoppingApp {
     private static final List<Product> products = new ArrayList<>();
     private static final List<Product> cart = new ArrayList<>();
+    private static JPanel cartButtonPanel; // Declare cartButtonPanel here
 
     static {
         // Dummy data for products
-        products.add(new Product("Product 1", "Description 1", 10.99, "product3.jpg"));
-        products.add(new Product("Product 2", "Description 2", 15.99, "product2.jpg"));
-        products.add(new Product("Product 3", "Description 3", 20.99, "product3.jpg"));
-        products.add(new Product("Product 4", "Description 4", 25.99, "product4.jpg"));
+        products.add(new Product("Product 1", "Description 1", 10.99, "/product1.jpg"));
+        products.add(new Product("Product 2", "Description 2", 15.99, "/product2.jpg"));
+        products.add(new Product("Product 3", "Description 3", 20.99, "/product3.jpg"));
+        products.add(new Product("Product 4", "Description 4", 25.99, "/product4.jpg"));
     }
 
     public static void main(String[] args) {
@@ -33,13 +33,9 @@ public class ShoppingApp {
                     super.paintComponent(g);
                     // Load the background image
                     try {
-                        BufferedImage backgroundImage = ImageIO.read(new File("background.jpg"));
+                        BufferedImage backgroundImage = ImageIO.read(ShoppingApp.class.getResourceAsStream("/background.jpg"));
                         // Draw the background image with low opacity
-                        Graphics2D g2d = (Graphics2D) g.create();
-                        float opacity = 0.3f; // Opacity value (0.0 - 1.0)
-                        g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
-                        g2d.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
-                        g2d.dispose();
+                        g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -56,19 +52,22 @@ public class ShoppingApp {
 
             // Shopping cart panel
             JPanel cartPanel = new JPanel(new BorderLayout());
-            JList<Product> cartList = new JList<>();
-            DefaultListModel<Product> cartListModel = new DefaultListModel<>();
-            cartList.setModel(cartListModel);
-            cartPanel.add(new JLabel("Shopping Cart"), BorderLayout.NORTH);
-            cartPanel.add(new JScrollPane(cartList), BorderLayout.CENTER);
-
+            cartButtonPanel = new JPanel(new GridLayout(0, 1, 5, 5)); // Initialize cartButtonPanel here
             JButton checkoutButton = new JButton("Checkout");
             checkoutButton.addActionListener(e -> {
                 // Process checkout
-                JOptionPane.showMessageDialog(frame, "Checkout process goes here.");
+                double totalPrice = 0;
+                for (Product product : cart) {
+                    totalPrice += product.getPrice();
+                }
+                JOptionPane.showMessageDialog(frame, "Total Price: $" + totalPrice);
                 cart.clear();
-                cartListModel.clear();
+                cartButtonPanel.removeAll();
+                cartButtonPanel.revalidate();
+                cartButtonPanel.repaint();
             });
+            cartPanel.add(new JLabel("Shopping Cart"), BorderLayout.NORTH);
+            cartPanel.add(cartButtonPanel, BorderLayout.CENTER);
             cartPanel.add(checkoutButton, BorderLayout.SOUTH);
             mainPanel.add(cartPanel, BorderLayout.EAST);
 
@@ -81,46 +80,52 @@ public class ShoppingApp {
     }
 
     private static JPanel createProductPanel(Product product, JFrame parentFrame) {
-    JPanel panel = new JPanel(new BorderLayout());
-    panel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
 
-    JLabel nameLabel = new JLabel(product.getName());
-    panel.add(nameLabel, BorderLayout.NORTH);
+        JLabel nameLabel = new JLabel(product.getName());
+        panel.add(nameLabel, BorderLayout.NORTH);
 
-    JLabel priceLabel = new JLabel("$" + product.getPrice());
-    panel.add(priceLabel, BorderLayout.SOUTH);
+        JLabel priceLabel = new JLabel("$" + product.getPrice());
+        panel.add(priceLabel, BorderLayout.SOUTH);
 
-    JButton detailsButton = new JButton();
-    detailsButton.setPreferredSize(new Dimension(200, 200)); // Set preferred size for the button
-    BufferedImage image = loadImage(product.getImage());
-    if (image != null) {
-        // Scale the image to fit the button
-        Image scaledImage = image.getScaledInstance(200, 200, Image.SCALE_SMOOTH);
-        ImageIcon icon = new ImageIcon(scaledImage);
-        detailsButton.setIcon(icon);
-    } else {
-        detailsButton.setText("Image not available");
+        JButton detailsButton = new JButton();
+        detailsButton.setPreferredSize(new Dimension(200, 200)); // Set preferred size for the button
+        BufferedImage image = loadImage(product.getImage());
+        if (image != null) {
+            // Scale the image to fit the button
+            Image scaledImage = image.getScaledInstance(200, 200, Image.SCALE_SMOOTH);
+            ImageIcon icon = new ImageIcon(scaledImage);
+            detailsButton.setIcon(icon);
+        } else {
+            detailsButton.setText("Image not available");
+        }
+        detailsButton.addActionListener(e -> {
+            // Show product details
+            JOptionPane.showMessageDialog(parentFrame, product.getDescription(), "Product Details", JOptionPane.INFORMATION_MESSAGE);
+        });
+        panel.add(detailsButton, BorderLayout.CENTER);
+
+        JButton addButton = new JButton("Add to Cart");
+        addButton.addActionListener(e -> {
+            cart.add(product);
+            JButton cartButton = new JButton(product.getName());
+            cartButton.addActionListener(ev -> {
+                JOptionPane.showMessageDialog(parentFrame, "Added " + product.getName() + " to cart.");
+            });
+            cartButtonPanel.add(cartButton);
+            cartButtonPanel.revalidate();
+            cartButtonPanel.repaint();
+            JOptionPane.showMessageDialog(null, product.getName() + " added to cart.");
+        });
+        panel.add(addButton, BorderLayout.SOUTH); // Placing buttons below the image
+
+        return panel;
     }
-    detailsButton.addActionListener(e -> {
-        // Show product details
-        JOptionPane.showMessageDialog(parentFrame, product.getDescription(), "Product Details", JOptionPane.INFORMATION_MESSAGE);
-    });
-    panel.add(detailsButton, BorderLayout.CENTER);
-
-    JButton addButton = new JButton("Add to Cart");
-    addButton.addActionListener(e -> {
-        cart.add(product);
-        JOptionPane.showMessageDialog(null, product.getName() + " added to cart.");
-    });
-    panel.add(addButton, BorderLayout.SOUTH); // Placing buttons below the image
-
-    return panel;
-}
 
     private static BufferedImage loadImage(String imageName) {
         try {
-            File file = new File(imageName);
-            return ImageIO.read(file);
+            return ImageIO.read(ShoppingApp.class.getResourceAsStream(imageName));
         } catch (IOException e) {
             e.printStackTrace();
             return null;
