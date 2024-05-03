@@ -108,43 +108,68 @@ public class ShoppingApp {
         });
     }
 
-    private static JPanel createProductPanel(Product product, JFrame parentFrame) {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+private static JPanel createProductPanel(Product product, JFrame parentFrame) {
+    JPanel panel = new JPanel(new BorderLayout());
+    panel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
 
-        JLabel nameLabel = new JLabel(product.getName());
-        panel.add(nameLabel, BorderLayout.NORTH);
+    JLabel nameLabel = new JLabel(product.getName());
+    panel.add(nameLabel, BorderLayout.NORTH);
 
-        JLabel priceLabel = new JLabel("$" + product.getPrice());
-        panel.add(priceLabel, BorderLayout.SOUTH);
+    JLabel priceLabel = new JLabel("$" + product.getPrice());
+    panel.add(priceLabel, BorderLayout.SOUTH);
 
-        JButton detailsButton = new JButton();
-        detailsButton.setPreferredSize(new Dimension(200, 200)); // Set preferred size for the button
-        BufferedImage image = loadImage(product.getImage());
-        if (image != null) {
-            // Scale the image to fit the button
-            Image scaledImage = image.getScaledInstance(200, 200, Image.SCALE_SMOOTH);
-            ImageIcon icon = new ImageIcon(scaledImage);
-            detailsButton.setIcon(icon);
-        } else {
-            detailsButton.setText("Image not available");
-        }
-        detailsButton.addActionListener(e -> {
-            // Show product details
-            JOptionPane.showMessageDialog(parentFrame, product.getDescription(), "Product Details", JOptionPane.INFORMATION_MESSAGE);
-        });
-        panel.add(detailsButton, BorderLayout.CENTER);
-
-        JButton addButton = new JButton("Add to Cart");
-        addButton.addActionListener(e -> {
-            cart.add(product);
-            updateCartPanel();
-            JOptionPane.showMessageDialog(null, product.getName() + " added to cart.");
-        });
-        panel.add(addButton, BorderLayout.SOUTH); // Placing buttons below the image
-
-        return panel;
+    JButton detailsButton = new JButton();
+    detailsButton.setPreferredSize(new Dimension(200, 200)); // Set preferred size for the button
+    BufferedImage image = loadImage(product.getImage());
+    if (image != null) {
+        // Scale the image to fit the button
+        Image scaledImage = image.getScaledInstance(200, 200, Image.SCALE_SMOOTH);
+        ImageIcon icon = new ImageIcon(scaledImage);
+        detailsButton.setIcon(icon);
+    } else {
+        detailsButton.setText("Image not available");
     }
+    detailsButton.addActionListener(e -> {
+        // Create a custom dialog window to display product details
+        JDialog dialog = new JDialog(parentFrame, "Product Details", Dialog.ModalityType.APPLICATION_MODAL);
+        dialog.setLayout(new BorderLayout());
+        
+        // Panel to hold image and description
+        JPanel contentPanel = new JPanel(new BorderLayout());
+        
+        // Display product image
+        JLabel imageLabel = new JLabel(new ImageIcon(image));
+        contentPanel.add(imageLabel, BorderLayout.CENTER);
+        
+        // Display custom description
+        JTextArea descriptionArea = new JTextArea(product.getDescription());
+        descriptionArea.setEditable(false);
+        JScrollPane descriptionScrollPane = new JScrollPane(descriptionArea);
+        contentPanel.add(descriptionScrollPane, BorderLayout.SOUTH);
+        
+        dialog.add(contentPanel, BorderLayout.CENTER);
+        
+        // Close button
+        JButton closeButton = new JButton("Close");
+        closeButton.addActionListener(ev -> dialog.dispose());
+        dialog.add(closeButton, BorderLayout.SOUTH);
+        
+        dialog.pack();
+        dialog.setLocationRelativeTo(parentFrame);
+        dialog.setVisible(true);
+    });
+    panel.add(detailsButton, BorderLayout.CENTER);
+
+    JButton addButton = new JButton("Add to Cart");
+    addButton.addActionListener(e -> {
+        cart.add(product);
+        updateCartPanel();
+        JOptionPane.showMessageDialog(null, product.getName() + " added to cart.");
+    });
+    panel.add(addButton, BorderLayout.SOUTH); // Placing buttons below the image
+
+    return panel;
+}
 
     private static BufferedImage loadImage(String imageName) {
         try {
