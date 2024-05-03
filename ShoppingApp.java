@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
@@ -11,6 +12,7 @@ public class ShoppingApp {
     private static final List<Product> products = new ArrayList<>();
     private static final List<Product> cart = new ArrayList<>();
     private static JPanel cartButtonPanel; // Declare cartButtonPanel here
+    private static JLabel totalPriceLabel;
 
     static {
         // Dummy data for products
@@ -22,10 +24,17 @@ public class ShoppingApp {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            JFrame frame = new JFrame("Shopping App");
+            JFrame frame = new JFrame();
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setSize(800, 600); // Fixed resolution
             frame.setLocationRelativeTo(null); // Center the frame
+
+            // Title bar panel
+            JPanel titleBar = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            JLabel titleLabel = new JLabel("Shopping App");
+            titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+            titleBar.add(titleLabel);
+            frame.add(titleBar, BorderLayout.NORTH);
 
             JPanel mainPanel = new JPanel(new BorderLayout()) {
                 @Override
@@ -42,6 +51,17 @@ public class ShoppingApp {
                 }
             };
 
+            // Search panel
+            JPanel searchPanel = new JPanel(new BorderLayout());
+            JTextField searchField = new JTextField();
+            searchField.setPreferredSize(new Dimension(200, 30));
+            searchField.addActionListener(e -> filterProducts(searchField.getText()));
+            JButton searchButton = new JButton("Search");
+            searchButton.addActionListener(e -> filterProducts(searchField.getText()));
+            searchPanel.add(searchField, BorderLayout.CENTER);
+            searchPanel.add(searchButton, BorderLayout.EAST);
+            mainPanel.add(searchPanel, BorderLayout.NORTH);
+
             // Product display panel
             JPanel productPanel = new JPanel(new GridLayout(0, 2, 10, 10));
             for (Product product : products) {
@@ -53,29 +73,28 @@ public class ShoppingApp {
             // Shopping cart panel
             JPanel cartPanel = new JPanel(new BorderLayout());
             cartButtonPanel = new JPanel(new GridLayout(0, 1, 5, 5)); // Initialize cartButtonPanel here
-            JButton checkoutButton = new JButton("Checkout");
-            checkoutButton.addActionListener(e -> {
-                // Process checkout
-                double totalPrice = 0;
-                for (Product product : cart) {
-                    totalPrice += product.getPrice();
-                }
-                JOptionPane.showMessageDialog(frame, "Total Price: $" + totalPrice);
-                cart.clear();
-                cartButtonPanel.removeAll();
-                cartButtonPanel.revalidate();
-                cartButtonPanel.repaint();
-            });
+            JScrollPane cartScrollPane = new JScrollPane(cartButtonPanel);
             cartPanel.add(new JLabel("Shopping Cart"), BorderLayout.NORTH);
-            cartPanel.add(cartButtonPanel, BorderLayout.CENTER);
-            cartPanel.add(checkoutButton, BorderLayout.SOUTH);
+            cartPanel.add(cartScrollPane, BorderLayout.CENTER);
+
+            JPanel cartControlPanel = new JPanel(new BorderLayout());
+            JButton clearCartButton = new JButton("Clear Cart");
+            clearCartButton.addActionListener(e -> {
+                cart.clear();
+                updateCartPanel();
+            });
+            cartControlPanel.add(clearCartButton, BorderLayout.WEST);
+            totalPriceLabel = new JLabel("Total Price: $0.00");
+            cartControlPanel.add(totalPriceLabel, BorderLayout.EAST);
+            cartPanel.add(cartControlPanel, BorderLayout.SOUTH);
+
             mainPanel.add(cartPanel, BorderLayout.EAST);
 
             frame.add(mainPanel);
             frame.setVisible(true);
 
             // Set font for the entire application
-            setUIFont(new javax.swing.plaf.FontUIResource("Copperplate Gothic", Font.PLAIN, 14));
+            setUIFont(new javax.swing.plaf.FontUIResource("Arial", Font.PLAIN, 14));
         });
     }
 
@@ -109,13 +128,7 @@ public class ShoppingApp {
         JButton addButton = new JButton("Add to Cart");
         addButton.addActionListener(e -> {
             cart.add(product);
-            JButton cartButton = new JButton(product.getName());
-            cartButton.addActionListener(ev -> {
-                JOptionPane.showMessageDialog(parentFrame, "Added " + product.getName() + " to cart.");
-            });
-            cartButtonPanel.add(cartButton);
-            cartButtonPanel.revalidate();
-            cartButtonPanel.repaint();
+            updateCartPanel();
             JOptionPane.showMessageDialog(null, product.getName() + " added to cart.");
         });
         panel.add(addButton, BorderLayout.SOUTH); // Placing buttons below the image
@@ -176,5 +189,33 @@ public class ShoppingApp {
             if (value instanceof javax.swing.plaf.FontUIResource)
                 UIManager.put(key, f);
         }
+    }
+
+    // Filter products based on the search text
+    private static void filterProducts(String searchText) {
+        for (Product product : products) {
+            if (product.getName().toLowerCase().contains(searchText.toLowerCase())) {
+                // Show product panel
+            } else {
+                // Hide product panel
+            }
+        }
+    }
+
+    // Update the shopping cart panel with current items and total price
+    private static void updateCartPanel() {
+        cartButtonPanel.removeAll();
+        double totalPrice = 0;
+        for (Product product : cart) {
+            JButton cartButton = new JButton(product.getName());
+            cartButton.addActionListener(ev -> {
+                JOptionPane.showMessageDialog(null, "Added " + product.getName() + " to cart.");
+            });
+            cartButtonPanel.add(cartButton);
+            totalPrice += product.getPrice();
+        }
+        totalPriceLabel.setText(String.format("Total Price: $%.2f", totalPrice));
+        cartButtonPanel.revalidate();
+        cartButtonPanel.repaint();
     }
 }
