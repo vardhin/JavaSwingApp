@@ -82,7 +82,7 @@ public class ShoppingApp {
 
             // Shopping cart panel
             JPanel cartPanel = new JPanel(new BorderLayout());
-            cartButtonPanel = new JPanel(new GridLayout(0, 1, 5, 5)); // Initialize cartButtonPanel here
+            cartButtonPanel = new JPanel(new GridLayout(0, 2, 5, 5)); // Initialize cartButtonPanel here
             JScrollPane cartScrollPane = new JScrollPane(cartButtonPanel);
             cartPanel.add(new JLabel("Shopping Cart"), BorderLayout.NORTH);
             cartPanel.add(cartScrollPane, BorderLayout.CENTER);
@@ -108,68 +108,79 @@ public class ShoppingApp {
         });
     }
 
-private static JPanel createProductPanel(Product product, JFrame parentFrame) {
-    JPanel panel = new JPanel(new BorderLayout());
-    panel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+    private static JPanel createProductPanel(Product product, JFrame parentFrame) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
 
-    JLabel nameLabel = new JLabel(product.getName());
-    panel.add(nameLabel, BorderLayout.NORTH);
+        JLabel nameLabel = new JLabel(product.getName());
+        panel.add(nameLabel, BorderLayout.NORTH);
 
-    JLabel priceLabel = new JLabel("$" + product.getPrice());
-    panel.add(priceLabel, BorderLayout.SOUTH);
+        JLabel priceLabel = new JLabel("$" + product.getPrice());
+        panel.add(priceLabel, BorderLayout.SOUTH);
 
-    JButton detailsButton = new JButton();
-    detailsButton.setPreferredSize(new Dimension(200, 200)); // Set preferred size for the button
-    BufferedImage image = loadImage(product.getImage());
-    if (image != null) {
-        // Scale the image to fit the button
-        Image scaledImage = image.getScaledInstance(200, 200, Image.SCALE_SMOOTH);
-        ImageIcon icon = new ImageIcon(scaledImage);
-        detailsButton.setIcon(icon);
-    } else {
-        detailsButton.setText("Image not available");
+        JButton detailsButton = new JButton();
+        detailsButton.setPreferredSize(new Dimension(200, 200)); // Set preferred size for the button
+        BufferedImage image = loadImage(product.getImage());
+        if (image != null) {
+            // Scale the image to fit the button
+            Image scaledImage = image.getScaledInstance(200, 200, Image.SCALE_SMOOTH);
+            ImageIcon icon = new ImageIcon(scaledImage);
+            detailsButton.setIcon(icon);
+        } else {
+            detailsButton.setText("Image not available");
+        }
+        detailsButton.addActionListener(e -> {
+            // Create a custom dialog window to display product details
+            JDialog dialog = new JDialog(parentFrame, "Product Details", Dialog.ModalityType.APPLICATION_MODAL);
+            dialog.setLayout(new BorderLayout());
+
+            // Panel to hold image and description
+            JPanel contentPanel = new JPanel(new BorderLayout());
+
+            // Display product image
+            JLabel imageLabel = new JLabel(new ImageIcon(image));
+            contentPanel.add(imageLabel, BorderLayout.CENTER);
+
+            // Display custom description
+            JTextArea descriptionArea = new JTextArea(product.getDescription());
+            descriptionArea.setEditable(false);
+            JScrollPane descriptionScrollPane = new JScrollPane(descriptionArea);
+            contentPanel.add(descriptionScrollPane, BorderLayout.SOUTH);
+
+            dialog.add(contentPanel, BorderLayout.CENTER);
+
+            // Close button
+            JButton closeButton = new JButton("Close");
+            closeButton.addActionListener(ev -> dialog.dispose());
+            dialog.add(closeButton, BorderLayout.SOUTH);
+
+            dialog.pack();
+            dialog.setLocationRelativeTo(parentFrame);
+            dialog.setVisible(true);
+        });
+        panel.add(detailsButton, BorderLayout.CENTER);
+
+        JPanel buttonPanel = new JPanel(new BorderLayout());
+
+        JButton addButton = new JButton("Add to Cart");
+        addButton.addActionListener(e -> {
+            cart.add(product);
+            updateCartPanel();
+            JOptionPane.showMessageDialog(null, product.getName() + " added to cart.");
+        });
+        buttonPanel.add(addButton, BorderLayout.WEST);
+
+        // Quantity selection
+        JComboBox<Integer> quantityComboBox = new JComboBox<>();
+        for (int i = 1; i <= 10; i++) {
+            quantityComboBox.addItem(i);
+        }
+        buttonPanel.add(quantityComboBox, BorderLayout.EAST);
+
+        panel.add(buttonPanel, BorderLayout.SOUTH); // Placing buttons below the image
+
+        return panel;
     }
-    detailsButton.addActionListener(e -> {
-        // Create a custom dialog window to display product details
-        JDialog dialog = new JDialog(parentFrame, "Product Details", Dialog.ModalityType.APPLICATION_MODAL);
-        dialog.setLayout(new BorderLayout());
-        
-        // Panel to hold image and description
-        JPanel contentPanel = new JPanel(new BorderLayout());
-        
-        // Display product image
-        JLabel imageLabel = new JLabel(new ImageIcon(image));
-        contentPanel.add(imageLabel, BorderLayout.CENTER);
-        
-        // Display custom description
-        JTextArea descriptionArea = new JTextArea(product.getDescription());
-        descriptionArea.setEditable(false);
-        JScrollPane descriptionScrollPane = new JScrollPane(descriptionArea);
-        contentPanel.add(descriptionScrollPane, BorderLayout.SOUTH);
-        
-        dialog.add(contentPanel, BorderLayout.CENTER);
-        
-        // Close button
-        JButton closeButton = new JButton("Close");
-        closeButton.addActionListener(ev -> dialog.dispose());
-        dialog.add(closeButton, BorderLayout.SOUTH);
-        
-        dialog.pack();
-        dialog.setLocationRelativeTo(parentFrame);
-        dialog.setVisible(true);
-    });
-    panel.add(detailsButton, BorderLayout.CENTER);
-
-    JButton addButton = new JButton("Add to Cart");
-    addButton.addActionListener(e -> {
-        cart.add(product);
-        updateCartPanel();
-        JOptionPane.showMessageDialog(null, product.getName() + " added to cart.");
-    });
-    panel.add(addButton, BorderLayout.SOUTH); // Placing buttons below the image
-
-    return panel;
-}
 
     private static BufferedImage loadImage(String imageName) {
         try {
@@ -227,41 +238,41 @@ private static JPanel createProductPanel(Product product, JFrame parentFrame) {
     }
 
     // Filter products based on the search text
-private static void filterProducts(String searchText) {
-    List<Component> foundComponents = new ArrayList<>();
-    List<Component> hiddenComponents = new ArrayList<>();
-    
-    // Separate found and hidden components
-    for (Component component : productPanel.getComponents()) {
-        if (component instanceof JPanel) {
-            JPanel productPanel = (JPanel) component;
-            JLabel nameLabel = (JLabel) productPanel.getComponent(0);
-            String productName = nameLabel.getText();
-            if (productName.toLowerCase().contains(searchText.toLowerCase())) {
-                foundComponents.add(productPanel);
-            } else {
-                hiddenComponents.add(productPanel);
+    private static void filterProducts(String searchText) {
+        List<Component> foundComponents = new ArrayList<>();
+        List<Component> hiddenComponents = new ArrayList<>();
+
+        // Separate found and hidden components
+        for (Component component : productPanel.getComponents()) {
+            if (component instanceof JPanel) {
+                JPanel productPanel = (JPanel) component;
+                JLabel nameLabel = (JLabel) productPanel.getComponent(0);
+                String productName = nameLabel.getText();
+                if (productName.toLowerCase().contains(searchText.toLowerCase())) {
+                    foundComponents.add(productPanel);
+                } else {
+                    hiddenComponents.add(productPanel);
+                }
             }
         }
+
+        // Remove all components from productPanel
+        productPanel.removeAll();
+
+        // Add found components to the top
+        for (Component component : foundComponents) {
+            productPanel.add(component);
+        }
+
+        // Add hidden components after found components
+        for (Component component : hiddenComponents) {
+            productPanel.add(component);
+        }
+
+        // Refresh the layout to reflect changes
+        productPanel.revalidate();
+        productPanel.repaint();
     }
-    
-    // Remove all components from productPanel
-    productPanel.removeAll();
-    
-    // Add found components to the top
-    for (Component component : foundComponents) {
-        productPanel.add(component);
-    }
-    
-    // Add hidden components after found components
-    for (Component component : hiddenComponents) {
-        productPanel.add(component);
-    }
-    
-    // Refresh the layout to reflect changes
-    productPanel.revalidate();
-    productPanel.repaint();
-}
 
 
     // Update the shopping cart panel with current items and total price
@@ -269,11 +280,16 @@ private static void filterProducts(String searchText) {
         cartButtonPanel.removeAll();
         double totalPrice = 0;
         for (Product product : cart) {
-            JButton cartButton = new JButton(product.getName());
-            cartButton.addActionListener(ev -> {
-                JOptionPane.showMessageDialog(null, "Added " + product.getName() + " to cart.");
+            JPanel cartItemPanel = new JPanel(new BorderLayout());
+            JLabel nameLabel = new JLabel(product.getName());
+            cartItemPanel.add(nameLabel, BorderLayout.WEST);
+            JButton removeButton = new JButton("Remove");
+            removeButton.addActionListener(ev -> {
+                cart.remove(product);
+                updateCartPanel();
             });
-            cartButtonPanel.add(cartButton);
+            cartItemPanel.add(removeButton, BorderLayout.EAST);
+            cartButtonPanel.add(cartItemPanel);
             totalPrice += product.getPrice();
         }
         totalPriceLabel.setText(String.format("Total Price: $%.2f", totalPrice));
