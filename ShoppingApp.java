@@ -13,6 +13,7 @@ public class ShoppingApp {
     private static final List<Product> cart = new ArrayList<>();
     private static JPanel cartButtonPanel; // Declare cartButtonPanel here
     private static JLabel totalPriceLabel;
+    private static JPanel productPanel; // Declare productPanel here
 
     static {
         // Dummy data for products
@@ -63,7 +64,7 @@ public class ShoppingApp {
             mainPanel.add(searchPanel, BorderLayout.NORTH);
 
             // Product display panel
-            JPanel productPanel = new JPanel(new GridLayout(0, 2, 10, 10));
+            productPanel = new JPanel(new GridLayout(0, 2, 10, 10));
             for (Product product : products) {
                 productPanel.add(createProductPanel(product, frame));
             }
@@ -193,13 +194,21 @@ public class ShoppingApp {
 
     // Filter products based on the search text
     private static void filterProducts(String searchText) {
-        for (Product product : products) {
-            if (product.getName().toLowerCase().contains(searchText.toLowerCase())) {
-                // Show product panel
-            } else {
-                // Hide product panel
+        for (Component component : productPanel.getComponents()) {
+            if (component instanceof JPanel) {
+                JPanel productPanel = (JPanel) component;
+                JLabel nameLabel = (JLabel) productPanel.getComponent(0);
+                String productName = nameLabel.getText();
+                if (productName.toLowerCase().contains(searchText.toLowerCase())) {
+                    productPanel.setVisible(true); // Show product panel
+                } else {
+                    productPanel.setVisible(false); // Hide product panel
+                }
             }
         }
+        // Refresh the layout to reflect changes
+        productPanel.revalidate();
+        productPanel.repaint();
     }
 
     // Update the shopping cart panel with current items and total price
