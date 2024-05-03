@@ -21,6 +21,13 @@ public class ShoppingApp {
         products.add(new Product("Product 2", "Description 2", 15.99, "/product2.jpg"));
         products.add(new Product("Product 3", "Description 3", 20.99, "/product3.jpg"));
         products.add(new Product("Product 4", "Description 4", 25.99, "/product4.jpg"));
+        // Add more products
+        products.add(new Product("Product 5", "Description 5", 30.99, "/product2.jpg"));
+        products.add(new Product("Product 6", "Description 6", 35.99, "/product2.jpg"));
+        products.add(new Product("Product 7", "Description 7", 40.99, "/product2.jpg"));
+        products.add(new Product("Product 8", "Description 8", 45.99, "/product2.jpg"));
+        products.add(new Product("Product 9", "Description 9", 50.99, "/product2.jpg"));
+        products.add(new Product("Product 10", "Description 10", 55.99, "/product2.jpg"));
     }
 
     public static void main(String[] args) {
@@ -70,6 +77,7 @@ public class ShoppingApp {
                 productPanel.add(createProductPanel(product, frame));
             }
             JScrollPane productScrollPane = new JScrollPane(productPanel);
+            productScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
             mainPanel.add(productScrollPane, BorderLayout.CENTER);
 
             // Shopping cart panel
