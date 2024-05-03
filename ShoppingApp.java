@@ -17,7 +17,7 @@ public class ShoppingApp {
 
     static {
         // Dummy data for products
-        products.add(new Product("Product 1", "Description 1", 10.99, "/product1.jpg"));
+        products.add(new Product("Product 1", "Description 1", 10.99, "/product3.jpg"));
         products.add(new Product("Product 2", "Description 2", 15.99, "/product2.jpg"));
         products.add(new Product("Product 3", "Description 3", 20.99, "/product3.jpg"));
         products.add(new Product("Product 4", "Description 4", 25.99, "/product4.jpg"));
@@ -40,7 +40,7 @@ public class ShoppingApp {
             // Title bar panel
             JPanel titleBar = new JPanel(new FlowLayout(FlowLayout.CENTER));
             JLabel titleLabel = new JLabel("Shopping App");
-            titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+            titleLabel.setFont(new Font("Century Gothic", Font.BOLD, 24));
             titleBar.add(titleLabel);
             frame.add(titleBar, BorderLayout.NORTH);
 
@@ -104,7 +104,7 @@ public class ShoppingApp {
             frame.setVisible(true);
 
             // Set font for the entire application
-            setUIFont(new javax.swing.plaf.FontUIResource("Arial", Font.PLAIN, 14));
+            setUIFont(new javax.swing.plaf.FontUIResource("Century Gothic", Font.PLAIN, 14));
         });
     }
 
